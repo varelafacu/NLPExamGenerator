@@ -1,0 +1,134 @@
+﻿@{
+    ViewBag.Title = "Inicio";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var nombreUsuario = Context.Session.GetString("NombreUsuario");
+}
+
+<section class="hero">
+    @if (!string.IsNullOrEmpty(nombreUsuario))
+    {
+        <div class="saludo-container">
+            <p class="bienvenida">¡Hola, @nombreUsuario!</p>
+        </div>
+    }
+
+    <h1 class="title">¿QUÉ ESTUDIAMOS HOY?</h1>
+    <p class="subtitle">Subí el material y prepará tu examen.</p>
+
+    <div class="upload">
+        <div class="upload-box" id="dropArea">
+            <p>Haz clic para subir, o arrastra los PDF aquí</p>
+
+            <!-- Lista de archivos seleccionados -->
+            <ul id="fileList" style="list-style:none; padding-left:0; margin-top:1rem;"></ul>
+
+            <form enctype="multipart/form-data" method="post" action="/Home/SubirPdf" id="uploadForm">
+                <label class="upload-btn">
+                    <input type="file" accept="application/pdf" multiple hidden id="fileInput" />
+                    <span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" viewBox="0 0 24 24">
+                            <path fill="#FFFFFF" d="M6 20q-.825 0-1.412-.587T4 18v-2q0-.425.288-.712T5 15t.713.288T6 16v2h12v-2q0-.425.288-.712T19 15t.713.288T20 16v2q0 .825-.587 1.413T18 20zm5-12.15L9.125 9.725q-.3.3-.712.288T7.7 9.7q-.275-.3-.288-.7t.288-.7l3.6-3.6q.15-.15.325-.212T12 4.425t.375.063t.325.212l3.6 3.6q.3.3.288.7t-.288.7q-.3.3-.712.313t-.713-.288L13 7.85V15q0 .425-.288.713T12 16t-.712-.288T11 15z" />
+                        </svg>
+                        Subir PDFs
+                    </span>
+                </label>
+
+                <input type="submit" value="Crear examen" class="upload-btn crear-examen"
+                       id="crearExamenBtn" style="display:none;" />
+            </form>
+        </div>
+    </div>
+  
+</section>
+
+<script>
+    const dropArea      = document.getElementById('dropArea');
+    const fileInput     = document.getElementById('fileInput');
+    const fileList      = document.getElementById('fileList');
+    const crearExamenBtn= document.getElementById('crearExamenBtn');
+    const uploadForm    = document.getElementById('uploadForm');
+
+    // arreglo para mantener los archivos seleccionados
+    let selectedFiles = [];
+
+    // Drag & Drop - prevenir comportamiento por defecto
+    ['dragenter','dragover','dragleave','drop'].forEach(ev =>
+        dropArea.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); })
+    );
+
+    // Efecto visual en drag
+    ['dragenter','dragover'].forEach(ev =>
+        dropArea.addEventListener(ev, () => dropArea.style.boxShadow = "0 0 20px #4dabf7")
+    );
+    ['dragleave','drop'].forEach(ev =>
+        dropArea.addEventListener(ev, () => dropArea.style.boxShadow = "")
+    );
+
+    dropArea.addEventListener('drop', e => handleFiles(e.dataTransfer.files));
+    fileInput.addEventListener('change', e => handleFiles(e.target.files));
+
+    function handleFiles(files) {
+        Array.from(files).forEach(file => {
+            if (file.type === "application/pdf") {
+                selectedFiles.push(file);
+                addFileToList(file);
+            }
+        });
+        updateSubmitVisibility();
+        fileInput.value = '';
+    }
+
+    function addFileToList(file) {
+        const li = document.createElement('li');
+        li.style.marginBottom = "6px";
+        li.style.fontFamily   = "'Istok Web', sans-serif";
+        li.style.fontSize     = "0.95rem";
+        li.style.display      = "flex";
+        li.style.alignItems   = "center";
+        li.style.justifyContent = "space-between";
+         li.style.width            = "300px";
+         li.style.margin = "0 auto";
+
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = file.name;
+
+        const removeBtn = document.createElement('button');
+        removeBtn.textContent = '✕';
+        removeBtn.type = 'button';
+        removeBtn.style.marginLeft = '10px';
+        removeBtn.style.background = 'transparent';
+        removeBtn.style.border = 'none';
+        removeBtn.style.color = 'grey';
+        removeBtn.style.cursor = 'pointer';
+        removeBtn.style.fontSize = '1rem';
+
+        removeBtn.addEventListener('click', () => {
+            // quitar del arreglo
+            selectedFiles = selectedFiles.filter(f => f !== file);
+            // quitar del DOM
+            li.remove();
+            updateSubmitVisibility();
+        });
+
+        li.appendChild(nameSpan);
+        li.appendChild(removeBtn);
+        fileList.appendChild(li);
+    }
+
+    function updateSubmitVisibility() {
+        crearExamenBtn.style.display = selectedFiles.length > 0 ? 'inline-block' : 'none';
+    }
+
+    // Enviar con archivos en memoria
+    uploadForm.addEventListener('submit', e => {
+        e.preventDefault();
+        if (selectedFiles.length === 0) return;
+
+        const formData = new FormData();
+        selectedFiles.forEach(f => formData.append('archivoPdf', f));
+
+        fetch('/Home/SubirPdf', { method: 'POST', body: formData })
+            .then(res => res.ok ? alert('Archivos enviados') : alert('Error al enviar'))
+            .catch(err => console.error(err));
+    });
+</script>

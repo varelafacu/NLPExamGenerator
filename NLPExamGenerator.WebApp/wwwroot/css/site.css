@@ -1,0 +1,385 @@
+
+
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Gloria+Hallelujah&family=Inria+Sans:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Jura:wght@300..700&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto+Slab:wght@100..900&family=Shadows+Into+Light+Two&family=Walter+Turncoat&display=swap');
+
+body.bg-gradient {
+    background: radial-gradient(circle at center, #070087 20%, #1A1A1F 80%) !important;
+    color: #fff !important;
+   
+    margin: 0 !important;
+    min-height: 100vh !important;
+}
+
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row;
+    align-items: center;
+    padding: 1.5rem 0rem;
+    background: rgba(0,0,0,0.4);
+    width: 100%;
+    border-radius: 0 0 30px 30px  ;
+}
+.container-fluid {
+ 
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+
+
+.logo .brand {
+    font-family: 'Jura', sans-serif !important;
+    font-weight: 600;
+    font-size: 1.4rem;
+    color: #BEC4FA;
+}
+
+.logo .icon {
+    margin-left: .3rem;
+    font-weight: bold;
+    color: #4dabf7;
+}
+
+.nav-actions a {
+    margin-left: 1rem;
+    border-radius: 20px;
+    text-decoration: none;
+    color: #fff;
+    text-align: center;
+    font-size: 18px;
+    font-family: 'Istok Web', sans-serif !important;
+}
+
+.register-btn {
+    background-color: #2549A6;
+    border-radius: 30px;
+    padding: 8px 20px;
+    color: white;
+    font-size: 1rem !important;
+    gap: 15px !important;
+}
+.plus-btn {
+    display: inline-flex; /* permite alinear texto e icono con flex */
+    align-items: center; /* centra verticalmente */
+    gap: 6px; /* separación entre texto y SVG */
+    padding: 4px 12px;
+    text-decoration: none;
+    color: #fff;
+    font-size: 20px;
+    border-radius: 20px;
+    transition: background 0.3s;
+}
+
+    .plus-btn:hover {
+        background: rgba(255,255,255,0.1);
+    }
+
+    /* Opcional: si el SVG necesita tamaño específico */
+    .plus-btn svg {
+        width: 20px;
+        height: 20px;
+        margin-bottom: 4px;
+    }
+    .register-btn svg {
+        width: 20px;
+        height: 20px;
+        margin-bottom: 4px;
+        margin-right: 10px;
+    }
+
+.plus-btn:hover, .register-btn:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.main-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 4rem 1rem;
+}
+
+.hero {
+    display: flex;
+    flex-direction: column; /* obliga a los elementos a apilarse verticalmente */
+    align-items: center; /* centra horizontalmente */
+    text-align: center; /* centra el texto dentro de cada elemento */
+    margin-top: 6rem; /* espacio desde el top */
+    gap: 1rem; /* espacio entre saludo y título */
+}
+
+
+    .hero .title {
+        font-size: 3rem;
+        font-weight: 600;
+        margin-bottom: .5rem;
+        font-family: 'Jura', sans-serif !important;
+    }
+    .hero .subtitle {
+        font-family: 'Istok Web', sans-serif !important;
+        font-size: 1.5rem
+    }
+.upload {
+    border-radius: 16px;
+    background: #2549A6;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: 465px; /* 5px más que upload-box */
+    margin: 0 auto; /* centra upload en la página */
+    margin-top: 2rem;
+}
+.upload-box {
+   
+    padding: 2rem;
+    border: 2px dashed #4dabf7;
+    border-radius: 16px;
+    background: #2549A6;
+ 
+    min-width: 450px;
+    margin-left: auto;
+    margin-right: auto;
+    transition: box-shadow .3s;
+    font-family: 'Istok Web', sans-serif !important;
+}
+    .upload-box p {
+        font-size: 1rem;
+        font-weight: bolder;
+        color: #BEC4FA;
+    }
+
+    .upload-box:hover {
+        box-shadow: 0 0 20px #4dabf7;
+    }
+
+    
+   
+
+.upload-btn {
+    display: inline-block;
+    margin-top: 1rem;
+    background: #4dabf7;
+    color: #fff;
+    padding: .7rem 1.5rem;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: bold;
+    width: 165px;
+    height: 45px;
+}
+
+    .upload-btn:hover {
+        background: #339af0;
+    }
+
+.crear-examen {
+    background-color: #051B55;
+    margin-left: 8px;
+    border: none;
+}
+.crear-examen:hover {
+    background: #070087;
+    border: none;
+}
+/* Overlay */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+    .overlay.show {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+/* Popup centrado */
+.popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #1A1A1F; /* fondo gris oscuro */
+    padding: 3rem 2rem 2rem 2rem;
+    border-radius: 25px;
+    box-shadow: 0 5px 20px white;
+    color: #fff;
+    font-family: 'Istok Web', sans-serif;
+    z-index: 1000;
+    min-width: 360px;
+    min-height: 350px; /* mínimo para login */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+    /* Mostrar popup */
+    .popup.show {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+/* Contenedor 3D para carta */
+.card-container {
+    perspective: 1000px;
+    width: 100%;
+    height: 220px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background: transparent;
+    border: none !important;
+}
+
+.card {
+    width: 100%;
+    max-width: 340px;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.6s ease;
+    position: relative;
+    background: transparent;
+    border: none !important;
+}
+
+/* Caras de la carta */
+.card-face {
+    backface-visibility: hidden;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border-radius: 25px;
+    border: none !important;
+    box-shadow: none;
+}
+
+    .card-face.back {
+        transform: rotateY(180deg);
+    }
+
+.card.flipped {
+    transform: rotateY(180deg);
+}
+
+/* Formulario */
+.popup form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    width: 100%;
+    height:100%;
+    align-items: center;
+    margin-top: 0;
+    background: transparent; /* no tapar la carta */
+    border: none;
+}
+
+/* Inputs */
+.popup input {
+    width: 90%;
+    padding: 0.7rem 1rem;
+    border-radius: 12px;
+    border: none;
+    outline: none;
+    font-size: 1rem;
+    background-color: #fff; /* solo inputs blancos */
+    color: #000;
+    box-shadow: none;
+}
+
+/* Botón submit */
+.popup button.submit-btn {
+    margin-top: 1.5rem;
+    padding: 0.7rem 1.2rem;
+    background: #4dabf7;
+    border: none;
+    border-radius: 25px;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    width: 50%;
+    transition: background 0.3s;
+}
+
+    .popup button.submit-btn:hover {
+        background: #339af0;
+    }
+
+/* Link alternar login/registro */
+.popup a.register-link {
+    display: block;
+    margin-top: 1.5rem;
+    text-align: center;
+    color: #4dabf7;
+    text-decoration: none;
+    font-size: 0.95rem;
+}
+
+    .popup a.register-link:hover {
+        text-decoration: underline;
+    }
+
+/* Botón cerrar */
+.popup .close-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: transparent;
+    border: none;
+    color: #BEC4FA;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+    .popup .close-btn:hover {
+        color: #4dabf7;
+    }
+
+/* Título */
+.popup h3 {
+    font-family: 'Jura', sans-serif;
+    font-weight: 600;
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    color: #BEC4FA;
+}
+
+.saludo-container {
+    margin-bottom: 1rem; /* espacio con el título */
+}
+
+.bienvenida {
+    font-size: 2rem; /* tamaño grande, pero no exagerado */
+    font-weight: lighter;
+    color: #4dabf7; /* azul brillante */
+    text-shadow: 1px 1px 5px rgba(0,0,0,0.5); /* sombra suave para destacar */
+    font-family: 'Istok Web', sans-serif;
+    margin: 0;
+}
+
