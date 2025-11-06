@@ -12,8 +12,8 @@
         </div>
     }
 
-    <h1 class="title">¿QUÉ ESTUDIAMOS HOY?</h1>
-    <p class="subtitle">Subí el material y prepará tu examen.</p>
+    <h1 id="titulo-dinamico" class="title" style="min-height: 2.5rem;">¿</h1>
+    <p class="subtitle">Subí tu material y prepará el examen.</p>
 
     <div class="upload">
         <div class="upload-box" id="dropArea">
@@ -132,3 +132,49 @@
             .catch(err => console.error(err));
     });
 </script>
+
+
+<script>
+    const frases = [
+        "QUÉ ESTUDIAMOS HOY?",
+        "LISTO PARA REPASAR?",
+        "QUÉ TEMA TOCA AHORA?",
+        "HACEMOS UN EXAMEN RÁPIDO?"
+    ];
+
+    let indiceFrase = 0;
+    let indiceLetra = 0;
+    const velocidadEscritura = 100;
+    const velocidadCambio = 4000;
+    const h1 = document.getElementById("titulo-dinamico");
+
+    function escribir() {
+        const frase = frases[indiceFrase];
+        h1.textContent = "¿" + frase.slice(0, indiceLetra);
+        indiceLetra++;
+
+        if (indiceLetra <= frase.length) {
+             setTimeout(escribir, velocidadEscritura);
+        } else {
+                setTimeout(borrar, velocidadCambio);
+        }
+    }
+
+    function borrar() {
+       const frase = frases[indiceFrase];
+       h1.textContent = "¿" + frase.slice(0, indiceLetra);
+       indiceLetra--;
+
+       if (indiceLetra >= 0) {
+          setTimeout(borrar, 100);
+       } else {
+          h1.innerHTML = "¿";
+          indiceFrase = (indiceFrase + 1) % frases.length;
+          indiceLetra = 0;
+          setTimeout(escribir, 200);
+        }
+    }
+
+    escribir();
+</script>
+
