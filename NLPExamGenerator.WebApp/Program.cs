@@ -2,6 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using NLPExamGenerator.Entidades;
 using NLPExamGenerator.Entidades.EF;
 using NLPExamGenerator.Logica;
+using NLPExamGenerator.WebApp.Models;
+using NLPExamGenerator.WebApp.Services;
+using QuestPDF;
+using QuestPDF.Infrastructure;
 var builder = WebApplication.CreateBuilder(args);
 
 // --------------------
@@ -17,7 +21,7 @@ builder.Services.AddDbContext<NLPExamGeneratorContext>(options =>
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
     if (string.IsNullOrEmpty(connectionString))
     {
-        throw new InvalidOperationException("La cadena de conexión 'DefaultConnection' no está definida en appsettings.json");
+        throw new InvalidOperationException("La cadena de conexiï¿½n 'DefaultConnection' no estï¿½ definida en appsettings.json");
     }
     options.UseSqlServer(connectionString);
 });
@@ -27,6 +31,14 @@ builder.Services.AddDbContext<NLPExamGeneratorContext>(options =>
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();*/
 
 builder.Services.AddScoped<IUsuarioLogica, UsuarioLogica>();
+
+// OpenAI
+builder.Services.Configure<OpenAIOptions>(builder.Configuration.GetSection("OpenAI"));
+builder.Services.AddHttpClient<IOpenAIService, OpenAIService>();
+
+// PDF
+builder.Services.AddScoped<IPdfGeneratorService, PdfGeneratorService>();
+Settings.License = LicenseType.Community;
 
 // Sesiones
 builder.Services.AddDistributedMemoryCache();

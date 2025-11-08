@@ -14,7 +14,7 @@ namespace PNLExamGenerator.Controllers
 
 
 
-        public AccountController(ILogger<AccountController> logger, UsuarioLogica usuarioLogica)
+        public AccountController(ILogger<AccountController> logger, IUsuarioLogica usuarioLogica)
         {
             _logger = logger;
             _usuarioLogica = usuarioLogica;

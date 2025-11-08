@@ -38,7 +38,19 @@
             </form>
         </div>
     </div>
-  
+
+    <div id="examResult" style="margin-top:2rem;"></div>
+    <div style="display:flex; gap:10px; justify-content:center;">
+        <button id="downloadPdfServerBtn" class="upload-btn" style="display:none; margin-top:1rem;">Descargar PDF</button>
+    </div>
+
+    <!-- Loader overlay -->
+    <div id="examOverlay" style="display:none;">
+        <div class="spinner-box">
+            <div class="spinner"></div>
+            <div class="loader-text">Generando examen...</div>
+        </div>
+    </div>
 </section>
 
 <script>
@@ -47,6 +59,40 @@
     const fileList      = document.getElementById('fileList');
     const crearExamenBtn= document.getElementById('crearExamenBtn');
     const uploadForm    = document.getElementById('uploadForm');
+    const examResult    = document.getElementById('examResult');
+    const examOverlay   = document.getElementById('examOverlay');
+    const downloadPdfServerBtn= document.getElementById('downloadPdfServerBtn');
+
+    // Mantener último examen generado para poder enviarlo al servidor
+    let lastExam = null;
+
+    // Loader styles (inyectados una sola vez)
+    if(!document.getElementById('loaderStyles')){
+        const style = document.createElement('style');
+        style.id = 'loaderStyles';
+        style.textContent = `
+        #examOverlay{
+            position:fixed; inset:0; z-index:1000;
+            display:flex; align-items:center; justify-content:center;
+            background:rgba(0,0,0,.45); backdrop-filter: blur(2px);
+        }
+        #examOverlay .spinner-box{ display:flex; flex-direction:column; align-items:center; gap:12px; }
+        #examOverlay .spinner{
+            width:56px; height:56px; border-radius:50%;
+            border:5px solid rgba(255,255,255,.18);
+            border-top-color:#9aa7ff;
+            animation:spin 1s linear infinite;
+        }
+        #examOverlay .loader-text{ color:#e6e9ff; font-weight:600; letter-spacing:.2px }
+        @@keyframes spin{ to{ transform:rotate(360deg) } }
+        `;
+        document.head.appendChild(style);
+    }
+
+    function setLoading(isLoading){
+        examOverlay.style.display = isLoading ? 'flex' : 'none';
+        crearExamenBtn.disabled = !!isLoading;
+    }
 
     // arreglo para mantener los archivos seleccionados
     let selectedFiles = [];
@@ -127,9 +173,120 @@
         const formData = new FormData();
         selectedFiles.forEach(f => formData.append('archivoPdf', f));
 
-        fetch('/Home/SubirPdf', { method: 'POST', body: formData })
-            .then(res => res.ok ? alert('Archivos enviados') : alert('Error al enviar'))
-            .catch(err => console.error(err));
+        setLoading(true);
+        fetch('/Exam/Generate', { method: 'POST', body: formData })
+            .then(async res => {
+                if(!res.ok){
+                    const txt = await res.text();
+                    throw new Error(txt || 'Error al procesar PDFs');
+                }
+                return res.json();
+            })
+            .then(data => {
+                if(!data.success){ alert(data.mensaje || 'No se pudo generar el examen'); return; }
+                renderExam(data.exam);
+                examResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Error: ' + err.message);
+            })
+            .finally(() => setLoading(false));
+    });
+
+    function renderExam(exam){
+        if(!exam || !Array.isArray(exam.questions)){
+            examResult.innerHTML = '<p>No se recibieron preguntas.</p>';
+            return;
+        }
+        lastExam = exam;
+
+        // Inyectar estilos una sola vez
+        if(!document.getElementById('examStyles')){
+            const style = document.createElement('style');
+            style.id = 'examStyles';
+            style.textContent = `
+            #examResult{max-width:960px;margin:2rem auto;text-align:left;}
+            .exam-title{color:#e6e9ff;margin-bottom:.5rem}
+            .exam-summary{color:#cfd3ff;margin-bottom:1rem}
+            .exam-question{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;margin:12px 0}
+            .exam-question h3{color:#e6e9ff;margin:0 0 .5rem;font-size:1.05rem}
+            .exam-options{list-style:none;margin:0;padding:0}
+            .exam-options li{display:flex;gap:10px;align-items:flex-start;padding:8px;border-radius:8px;color:#e6e9ff}
+            .exam-options li.correct{background:rgba(60,199,95,.14);border:1px solid rgba(74,222,128,.25)}
+            .exam-letter{font-weight:700;color:#cfd3ff;min-width:18px}
+            .exam-badge{margin-left:auto;color:#4ade80;font-size:.85rem}
+            .exam-explain{margin-top:.5rem;color:#b8befa}
+            .exam-explain summary{cursor:pointer;color:#cfd3ff}
+            `;
+            document.head.appendChild(style);
+        }
+
+        const letters = ['A','B','C','D','E','F'];
+        const blocks = [];
+        blocks.push(`<h2 class="exam-title">Examen generado</h2>`);
+        if(exam.sourceSummary){
+            blocks.push(`<div class="exam-summary">Resumen: ${escapeHtml(exam.sourceSummary)}</div>`);
+        }
+
+        exam.questions.forEach((q, idx) => {
+            const opts = (q.options || []).map((opt, i) => {
+                const isCorrect = i === q.correctIndex;
+                const badge = isCorrect ? '<span class="exam-badge">Correcta</span>' : '';
+                return `<li class="${isCorrect ? 'correct' : ''}"><span class="exam-letter">${letters[i] || ''}.</span><span>${escapeHtml(opt || '')}</span>${badge}</li>`;
+            }).join('');
+
+            const explain = q.explanation
+                ? `<details class="exam-explain"><summary>Explicación</summary><p>${escapeHtml(q.explanation)}</p></details>`
+                : '';
+
+            blocks.push(`
+                <div class="exam-question">
+                    <h3>${idx + 1}. ${escapeHtml(q.question || '')}</h3>
+                    <ul class="exam-options">${opts}</ul>
+                    ${explain}
+                </div>
+            `);
+        });
+
+        examResult.innerHTML = blocks.join('');
+        // mostrar botón de descarga
+        downloadPdfServerBtn.style.display = 'inline-block';
+    }
+
+    function escapeHtml(s){
+        return String(s).replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
+    }
+
+    // Descargar PDF desde el servidor con QuestPDF
+    downloadPdfServerBtn?.addEventListener('click', async () => {
+        if(!lastExam){ alert('Primero genera un examen.'); return; }
+        setLoading(true);
+        try{
+            const res = await fetch('/Pdf/Download', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(lastExam)
+            });
+            if(!res.ok){
+                const txt = await res.text();
+                throw new Error(txt || 'No se pudo generar el PDF en el servidor');
+            }
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Examen.pdf';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        }catch(err){
+            console.error(err);
+            alert('Error al generar PDF: ' + err.message);
+        }finally{
+            setLoading(false);
+        }
     });
 </script>
 
