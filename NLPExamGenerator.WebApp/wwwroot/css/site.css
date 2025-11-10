@@ -383,3 +383,90 @@ body.bg-gradient {
     margin: 0;
 }
 
+/* Estilos para el popup de usuario */
+#userPopup {
+    min-height: auto;
+    padding: 2.5rem 2rem;
+}
+
+#userPopup h3 {
+    margin-bottom: 0.5rem;
+}
+
+#userPopup .card-container {
+    height: auto;
+    padding: 1.5rem 0;
+}
+
+#userPopup .card {
+    height: auto;
+    background: transparent;
+}
+
+#userPopup .card-face {
+    position: relative;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, rgba(37, 73, 166, 0.3) 0%, rgba(77, 171, 247, 0.2) 100%);
+    border: 2px solid rgba(77, 171, 247, 0.3);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+#userPopup h4 {
+    color: #BEC4FA;
+    font-family: 'Jura', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    margin-top: 0;
+    text-align: center;
+}
+
+#userPopup p {
+    color: #fff;
+    font-size: 1rem;
+    margin: 0.8rem 0;
+    text-align: left;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(190, 196, 250, 0.2);
+}
+
+#userPopup p:last-of-type {
+    border-bottom: none;
+    margin-bottom: 1.5rem;
+}
+
+#userPopup p strong {
+    color: #4dabf7;
+    font-weight: 600;
+    display: inline-block;
+    min-width: 80px;
+}
+
+#userPopup #logoutBtn {
+    width: 100%;
+    padding: 0.8rem 1.5rem;
+    background: linear-gradient(135deg, #d6336c 0%, #f03e3e 100%);
+    border: none;
+    border-radius: 15px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(214, 51, 108, 0.3);
+    font-family: 'Istok Web', sans-serif;
+    margin-top: 1rem;
+}
+
+#userPopup #logoutBtn:hover {
+    background: linear-gradient(135deg, #c92a61 0%, #e03131 100%);
+    box-shadow: 0 6px 20px rgba(214, 51, 108, 0.5);
+    transform: translateY(-2px);
+}
+
+#userPopup #logoutBtn:active {
+    transform: translateY(0);
+}
+
