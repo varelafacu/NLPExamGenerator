@@ -1,7 +1,13 @@
+using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using NLPExamGenerator.Entidades;
 using NLPExamGenerator.Entidades.EF;
 using NLPExamGenerator.Logica;
+using NLPExamGenerator.WebApp.Models;
+using NLPExamGenerator.WebApp.Services;
+using QuestPDF;
+using QuestPDF.Infrastructure;
 var builder = WebApplication.CreateBuilder(args);
 
 // --------------------
@@ -12,14 +18,21 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 // DbContext con SQL Server
+// Detectar el sistema operativo
+var connectionString = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+    ? builder.Configuration.GetConnectionString("DefaultConnection")
+    : builder.Configuration.GetConnectionString("SQLiteConnection");
+
 builder.Services.AddDbContext<NLPExamGeneratorContext>(options =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-    if (string.IsNullOrEmpty(connectionString))
+    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
     {
-        throw new InvalidOperationException("La cadena de conexión 'DefaultConnection' no está definida en appsettings.json");
+        options.UseSqlServer(connectionString);
     }
-    options.UseSqlServer(connectionString);
+    else
+    {
+        options.UseSqlite(connectionString);
+    }
 });
 
 // Registrar repositorio y servicio de usuarios
@@ -27,6 +40,14 @@ builder.Services.AddDbContext<NLPExamGeneratorContext>(options =>
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();*/
 
 builder.Services.AddScoped<IUsuarioLogica, UsuarioLogica>();
+
+// OpenAI
+builder.Services.Configure<OpenAIOptions>(builder.Configuration.GetSection("OpenAI"));
+builder.Services.AddHttpClient<IOpenAIService, OpenAIService>();
+
+// PDF
+builder.Services.AddScoped<IPdfGeneratorService, PdfGeneratorService>();
+Settings.License = LicenseType.Community;
 
 // Sesiones
 builder.Services.AddDistributedMemoryCache();
@@ -36,6 +57,20 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Home/Index"; // o la ruta que elijas
+        options.ExpireTimeSpan = TimeSpan.FromDays(7);
+    });
+
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(2);
+    options.Cookie.HttpOnly = true;
+});
+
 
 var app = builder.Build();
 
@@ -56,6 +91,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 app.UseSession();
+app.UseAuthentication();
 app.UseAuthorization();
 
 // Rutas MVC
