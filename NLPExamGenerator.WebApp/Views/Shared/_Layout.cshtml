@@ -1,6 +1,8 @@
 ﻿@{
-    Layout = null;
-    bool isLoggedIn = User.Identity.IsAuthenticated;
+Layout = null;
+bool isLoggedIn = User.Identity.IsAuthenticated;
+string nombreUsuario = User.FindFirst("NombreUsuario")?.Value ?? "";
+string emailUsuario = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? "";
 }
 <!DOCTYPE html>
 <html lang="es">
@@ -11,64 +13,99 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
-<body class="bg-gradient">
-    <header class="topbar">
-        <div class="container-fluid">
-            <div class="logo">
-                <a href="/home/index" class="text-decoration-none"><span class="brand">NLPExamGenerator</span></a>
-                <a class="plus-btn" href="/home/comofunciona">¿Cómo Funciona? <span><path fill="none" stroke="#BEC4FA" stroke-width="2" d="M12 18V8zm0 5c6.075 0 11-4.925 11-11S18.075 1 12 1S1 5.925 1 12s4.925 11 11 11Zm5-11l-5-5l-5 5" /></span></a>
-            </div>
-            <nav class="nav-actions">
-                <a class="plus-btn" href="#">Plus <span><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="none" stroke="#BEC4FA" stroke-width="2" d="M12 18V8zm0 5c6.075 0 11-4.925 11-11S18.075 1 12 1S1 5.925 1 12s4.925 11 11 11Zm5-11l-5-5l-5 5" /></svg></span></a>
-                <a class="register-btn" href="#"><span><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="#FFFFFF" d="M12 2a5 5 0 1 1-5 5l.005-.217A5 5 0 0 1 12 2m2 12a5 5 0 0 1 5 5v1a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-1a5 5 0 0 1 5-5z" /></svg></span>Mi Cuenta</a>
-            </nav>
+<body class="bg-gradient" data-logged-in="@isLoggedIn.ToString().ToLower()">
+<header class="topbar">
+    <div class="container-fluid">
+        <div class="logo">
+            <a href="/home/index" class="text-decoration-none"><span class="brand">NLPExamGenerator</span></a>
+            <a class="plus-btn" href="/home/comofunciona">¿Cómo Funciona? <span><path fill="none" stroke="#BEC4FA" stroke-width="2" d="M12 18V8zm0 5c6.075 0 11-4.925 11-11S18.075 1 12 1S1 5.925 1 12s4.925 11 11 11Zm5-11l-5-5l-5 5" /></span></a>
         </div>
-    </header>
+        <nav class="nav-actions">
+            <a class="plus-btn" href="#">Plus <span><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="none" stroke="#BEC4FA" stroke-width="2" d="M12 18V8zm0 5c6.075 0 11-4.925 11-11S18.075 1 12 1S1 5.925 1 12s4.925 11 11 11Zm5-11l-5-5l-5 5" /></svg></span></a>
 
-    <main class="main-content">
-        @RenderBody()
-    </main>
+            @if (isLoggedIn)
+            {
+            <a class="register-btn" href="#" id="userBtn">
+                        <span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                                <path fill="#FFFFFF" d="M12 2a5 5 0 1 1-5 5l.005-.217A5 5 0 0 1 12 2m2 12a5 5 0 0 1 5 5v1a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-1a5 5 0 0 1 5-5z" />
+                            </svg>
+                        </span>
+                ¡Hola, @nombreUsuario!
+            </a>
+            }
+            else
+            {
+            <a class="register-btn" href="#" id="loginBtn">
+                        <span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                                <path fill="#FFFFFF" d="M12 2a5 5 0 1 1-5 5l.005-.217A5 5 0 0 1 12 2m2 12a5 5 0 0 1 5 5v1a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-1a5 5 0 0 1 5-5z" />
+                            </svg>
+                        </span>
+                Iniciar sesión
+            </a>
+            }
+        </nav>
+    </div>
+</header>
 
-     <!-- Overlay -->
-    <div id="overlay" class="overlay"></div>
+<main class="main-content">
+    @RenderBody()
+</main>
 
-    <!-- Popup login/registro -->
-    <div id="authPopup" class="popup">
+<!-- Overlay -->
+<div id="overlay" class="overlay"></div>
+
+<!-- Popup login/registro -->
+<div id="authPopup" class="popup">
+    <button class="close-btn">✕</button>
+    <h3 id="popupTitle">Inicia sesión</h3>
+    <div class="card-container">
+        <div class="card">
+            <form id="loginForm" class="card-face front">
+                @Html.AntiForgeryToken()
+                <input type="email" name="email" placeholder="Email" />
+                <input type="password" name="pass" placeholder="Contraseña" />
+                <button type="submit" class="submit-btn">Ingresar</button>
+            </form>
+
+            <form id="registerForm" class="card-face back">
+                @Html.AntiForgeryToken()
+                <input type="text" name="name" placeholder="Nombre completo" />
+                <input type="email" name="email" placeholder="Email" />
+                <input type="password" name="pass" placeholder="Contraseña" />
+                <input type="password" name="confirmPass" placeholder="Confirmar contraseña" />
+                <button type="submit" class="submit-btn">Registrarse</button>
+            </form>
+        </div>
+    </div>
+    <a href="#" id="toggleForm">¿No tienes cuenta? Registrate</a>
+</div>
+
+@if (isLoggedIn)
+{
+    <div id="userPopup" class="popup">
         <button class="close-btn">✕</button>
-        <h3 id="popupTitle">Inicia sesión</h3>
+        <h3 id="popupTitle">Bienvenido</h3>
+
         <div class="card-container">
             <div class="card">
-                <form id="loginForm" class="card-face front">
-                    @Html.AntiForgeryToken()
-                    <input type="email" name="email" placeholder="Email" />
-                    <input type="password" name="pass" placeholder="Contraseña" />
-                    <button type="submit" class="submit-btn">Ingresar</button>
-                </form>
-
-                <form id="registerForm" class="card-face back">
-                    @Html.AntiForgeryToken()
-                    <input type="text" name="name" placeholder="Nombre completo" />
-                    <input type="email" name="email" placeholder="Email" />
-                    <input type="password" name="pass" placeholder="Contraseña" />
-                    <input type="password" name="confirmPass" placeholder="Confirmar contraseña" />
-                    <button type="submit" class="submit-btn">Registrarse</button>
-                </form>
+                <div class="card-face front">
+                    <h4>Datos del usuario</h4>
+                    <p><strong>Nombre:</strong> @nombreUsuario</p>
+                    <p><strong>Email:</strong> @emailUsuario</p>
+                    <button id="logoutBtn">Cerrar sesión</button>
+                </div>
             </div>
         </div>
-        <a href="#" id="toggleForm">¿No tienes cuenta? Registrate</a>
     </div>
+}
 
-    <!-- Menú usuario -->
-    <div id="userMenu" class="dropdown-menu" style="display:none;">
-        <a href="/Account/Profile">Perfil</a>
-        <a href="/Account/Logout">Cerrar sesión</a>
-    </div>
 
-    <script>
-        const cuentaBtn = document.querySelector('.register-btn');
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
         const authPopup = document.getElementById('authPopup');
         const overlay = document.getElementById('overlay');
-        const userMenu = document.getElementById('userMenu');
         const toggleLink = document.getElementById('toggleForm');
         const popupTitle = document.getElementById('popupTitle');
         const card = document.querySelector('.card');
@@ -76,21 +113,16 @@
         const loginForm = document.getElementById('loginForm');
         const registerForm = document.getElementById('registerForm');
 
+        // Modal usuario
+        const userBtn = document.getElementById('userBtn');
+        const userPopup = document.getElementById('userPopup');
+        const closeUserPopup = userPopup?.querySelector('.close-btn');
+        const logoutBtn = document.getElementById('logoutBtn');
+
         // Convertir Razor bool a JS
-        const isLoggedIn = @isLoggedIn.ToString().ToLower() === "true";
+        const isLoggedIn = document.body.dataset.loggedIn === "true";
 
-        // Mostrar popup
-        cuentaBtn.addEventListener('click', e => {
-            e.preventDefault();
-            if(!isLoggedIn){
-                authPopup.classList.add('show');
-                overlay.classList.add('show');
-            } else {
-                userMenu.style.display = userMenu.style.display === 'block' ? 'none' : 'block';
-            }
-        });
-
-        // Cerrar popup
+        // Función cerrar popup
         function cerrarPopup() {
             authPopup.classList.remove('show');
             overlay.classList.remove('show');
@@ -98,14 +130,34 @@
             popupTitle.textContent = 'Inicia sesión';
             toggleLink.textContent = '¿No tienes cuenta? Registrate';
         }
-        overlay.addEventListener('click', cerrarPopup);
-        authPopup.querySelector('.close-btn').addEventListener('click', cerrarPopup);
+
+        // Mostrar popup o modal
+        document.querySelectorAll('#loginBtn, #userBtn').forEach(btn => {
+            btn?.addEventListener('click', e => {
+                e.preventDefault();
+                if (!isLoggedIn) {
+                    authPopup.classList.add('show');
+                    overlay.classList.add('show');
+                } else if(userPopup) {
+                    userPopup.classList.add('show');
+                    overlay.classList.add('show');
+                }
+            });
+        });
+
+        // Cerrar popup login/registro
+        overlay?.addEventListener('click', () => {
+            cerrarPopup();
+            if(userPopup) userPopup.classList.remove('show');
+            overlay.classList.remove('show');
+        });
+        authPopup?.querySelector('.close-btn')?.addEventListener('click', cerrarPopup);
 
         // Alternar login/registro
-        toggleLink.addEventListener('click', e => {
+        toggleLink?.addEventListener('click', e => {
             e.preventDefault();
             card.classList.toggle('flipped');
-            if(card.classList.contains('flipped')){
+            if (card.classList.contains('flipped')) {
                 popupTitle.textContent = 'Registro';
                 toggleLink.textContent = '¿Ya tienes cuenta? Inicia sesión';
                 cardContainer.style.height = '350px';
@@ -116,15 +168,12 @@
             }
         });
 
-        // Función AJAX genérica con loader
+        // AJAX login/register
         function ajaxForm(form, url){
-            form.addEventListener('submit', e => {
+            form?.addEventListener('submit', e => {
                 e.preventDefault();
-
                 const submitBtn = form.querySelector('button[type="submit"]');
                 const originalText = submitBtn.textContent;
-
-                // Deshabilitar botón y mostrar loader
                 submitBtn.disabled = true;
                 submitBtn.textContent = 'Cargando...';
 
@@ -133,53 +182,42 @@
                 if(token) data.append('__RequestVerificationToken', token);
 
                 fetch(url, { method:'POST', body:data })
-                .then(r => {
-                    if(!r.ok) throw new Error('HTTP ' + r.status);
-                    return r.json();
-                })
-                .then(resp => {
-                    if(resp.success){
-                        // Saludo dinámico
-                        const nombre = resp.nombre;
-                        let bienvenida = document.querySelector('.bienvenida');
-                        if(bienvenida){
-                            bienvenida.textContent = `¡Hola ${nombre}!`;
+                    .then(r => { if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+                    .then(resp => {
+                        if(resp.success){
+                            location.reload(); // recarga página para actualizar layout
                         } else {
-                            const p = document.createElement('p');
-                            p.className = 'bienvenida';
-                            p.textContent = `¡Hola ${nombre}!`;
-                            document.querySelector('.hero').prepend(p);
+                            alert(resp.mensaje);
                         }
-
-                        cerrarPopup();
-                        form.reset();
-                    } else {
-                        alert(resp.mensaje);
-                    }
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert('Error en el servidor: ' + err.message);
-                })
-                .finally(() => {
-                    // Restaurar botón
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = originalText;
-                });
+                    })
+                    .catch(err => { console.error(err); alert('Error en el servidor: ' + err.message); })
+                    .finally(() => { submitBtn.disabled = false; submitBtn.textContent = originalText; });
             });
         }
 
         ajaxForm(loginForm, '/Account/Login');
         ajaxForm(registerForm, '/Account/Register');
 
-        // Cerrar menú si clic afuera
-        document.addEventListener('click', e => {
-            if(!userMenu.contains(e.target) && !cuentaBtn.contains(e.target)){
-                userMenu.style.display = 'none';
+        // Cerrar modal usuario
+        closeUserPopup?.addEventListener('click', () => {
+            userPopup.classList.remove('show');
+            overlay.classList.remove('show');
+        });
+        window.addEventListener('click', e => {
+            if(e.target == userPopup) {
+                userPopup.classList.remove('show');
+                overlay.classList.remove('show');
             }
         });
-    </script>
 
-
+        // Logout AJAX
+        logoutBtn?.addEventListener('click', () => {
+            fetch('/Account/Logout', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => { if(data.success) location.reload(); })
+                .catch(err => console.error(err));
+        });
+    });
+</script>
 </body>
 </html>
