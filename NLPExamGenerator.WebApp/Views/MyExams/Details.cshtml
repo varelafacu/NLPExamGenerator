@@ -1,0 +1,171 @@
+@model NLPExamGenerator.WebApp.Models.ExamDetailViewModel
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-file-alt"></i> @ViewData["Title"]</h2>
+                <a href="@Url.Action("Index")" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left"></i> Volver a Mis Exámenes
+                </a>
+            </div>
+            
+            @if (Model != null)
+            {
+                <div id="examResult">
+                    <h2 class="exam-title">Examen guardado</h2>
+                    <div class="exam-summary mb-3">
+                        <strong>Fecha de creación:</strong> @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.SourceSummary))
+                    {
+                        <div class="exam-summary">Resumen: @Model.SourceSummary</div>
+                    }
+
+                    @if (Model.Questions != null && Model.Questions.Any())
+                    {
+                        @for (int i = 0; i < Model.Questions.Count; i++)
+                        {
+                            var question = Model.Questions[i];
+                            var letters = new[] { "A", "B", "C", "D", "E", "F" };
+                            
+                            <div class="exam-question">
+                                <h3>@(i + 1). @question.Question</h3>
+                                
+                                @if (question.Options != null && question.Options.Any())
+                                {
+                                    <ul class="exam-options">
+                                        @for (int j = 0; j < question.Options.Count; j++)
+                                        {
+                                            var isCorrect = j == question.CorrectIndex;
+                                            <li class="@(isCorrect ? "correct" : "")">
+                                                <span class="exam-letter">@letters[j].</span>
+                                                <span>@question.Options[j]</span>
+                                                @if (isCorrect)
+                                                {
+                                                    <span class="exam-badge">Correcta</span>
+                                                }
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+                                
+                                @if (!string.IsNullOrEmpty(question.Explanation))
+                                {
+                                    <details class="exam-explain">
+                                        <summary>Explicación</summary>
+                                        <p>@question.Explanation</p>
+                                    </details>
+                                }
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p>No hay preguntas disponibles para este examen.</p>
+                    }
+                </div>
+                
+                <!-- Acciones -->
+                <div class="text-center mt-4 mb-4">
+                    <button id="downloadPdfBtn" class="btn btn-success me-2">
+                        <i class="fas fa-file-pdf"></i> Descargar PDF
+                    </button>
+                    <a href="@Url.Action("Index", "MyExams")" class="btn btn-primary me-2">
+                        <i class="fas fa-list"></i> Ver Todos Mis Exámenes
+                    </a>
+                    <a href="@Url.Action("Index", "Home")" class="btn btn-outline-primary">
+                        <i class="fas fa-plus"></i> Generar Nuevo Examen
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-warning text-center">
+                    <p>No se encontró el examen.</p>
+                    <a href="@Url.Action("Index")" class="btn btn-primary">
+                        <i class="fas fa-arrow-left"></i> Volver a Mis Exámenes
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Aplicar los mismos estilos que en Index.cshtml
+        if(!document.getElementById('examStyles')){
+            const style = document.createElement('style');
+            style.id = 'examStyles';
+            style.textContent = `
+            #examResult{max-width:960px;margin:2rem auto;text-align:left;}
+            .exam-title{color:#e6e9ff;margin-bottom:.5rem}
+            .exam-summary{color:#cfd3ff;margin-bottom:1rem}
+            .exam-question{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;margin:12px 0}
+            .exam-question h3{color:#e6e9ff;margin:0 0 .5rem;font-size:1.05rem}
+            .exam-options{list-style:none;margin:0;padding:0}
+            .exam-options li{display:flex;gap:10px;align-items:flex-start;padding:8px;border-radius:8px;color:#e6e9ff}
+            .exam-options li.correct{background:rgba(60,199,95,.14);border:1px solid rgba(74,222,128,.25)}
+            .exam-letter{font-weight:700;color:#cfd3ff;min-width:18px}
+            .exam-badge{margin-left:auto;color:#4ade80;font-size:.85rem}
+            .exam-explain{margin-top:.5rem;color:#b8befa}
+            .exam-explain summary{cursor:pointer;color:#cfd3ff}
+            `;
+            document.head.appendChild(style);
+        }
+
+        // Funcionalidad para descargar PDF
+        const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+        
+        downloadPdfBtn?.addEventListener('click', async () => {
+            // Crear objeto de examen compatible con el formato esperado por el controlador PDF
+            const examData = {
+                sourceSummary: @Html.Raw(Json.Serialize(Model?.SourceSummary ?? "")),
+                questions: @Html.Raw(Json.Serialize(Model?.Questions?.Select(q => new {
+                    question = q.Question,
+                    options = q.Options,
+                    correctIndex = q.CorrectIndex,
+                    explanation = q.Explanation
+                }).ToArray() ?? new object[0]))
+            };
+
+            downloadPdfBtn.disabled = true;
+            downloadPdfBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando PDF...';
+            
+            try {
+                const response = await fetch('/Pdf/Download', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(examData)
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(errorText || 'No se pudo generar el PDF');
+                }
+
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'Examen_@(Model?.Title ?? "guardado").pdf';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error('Error al generar PDF:', error);
+                alert('Error al generar PDF: ' + error.message);
+            } finally {
+                downloadPdfBtn.disabled = false;
+                downloadPdfBtn.innerHTML = '<i class="fas fa-file-pdf"></i> Descargar PDF';
+            }
+        });
+    </script>
+}

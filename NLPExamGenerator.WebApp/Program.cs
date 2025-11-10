@@ -40,6 +40,7 @@ builder.Services.AddDbContext<NLPExamGeneratorContext>(options =>
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();*/
 
 builder.Services.AddScoped<IUsuarioLogica, UsuarioLogica>();
+builder.Services.AddScoped<IExamLogica, ExamLogica>();
 
 // OpenAI
 builder.Services.Configure<OpenAIOptions>(builder.Configuration.GetSection("OpenAI"));

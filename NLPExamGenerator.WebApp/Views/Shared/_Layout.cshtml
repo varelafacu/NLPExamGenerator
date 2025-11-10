@@ -12,6 +12,7 @@ string emailUsuario = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.V
     <title>@ViewBag.Title - ExamGenerator</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 </head>
 <body class="bg-gradient" data-logged-in="@isLoggedIn.ToString().ToLower()">
 <header class="topbar">
@@ -23,6 +24,14 @@ string emailUsuario = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.V
         <nav class="nav-actions">
             @if (isLoggedIn)
             {
+            <a class="register-btn me-3" href="/MyExams">
+                <span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                        <path fill="#FFFFFF" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm4 18H6V4h7v5h5z"/>
+                    </svg>
+                </span>
+                Mis Exámenes
+            </a>
             <a class="register-btn" href="#" id="userBtn">
                         <span>
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
@@ -92,6 +101,16 @@ string emailUsuario = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.V
                     <h4>Datos del usuario</h4>
                     <p><strong>Nombre:</strong> @nombreUsuario</p>
                     <p><strong>Email:</strong> @emailUsuario</p>
+                    
+                    <div class="mb-3">
+                        <a href="/MyExams" class="btn btn-primary w-100 mb-2">
+                            <i class="fas fa-clipboard-list"></i> Mis Exámenes
+                        </a>
+                        <a href="/Home" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-plus"></i> Generar Examen
+                        </a>
+                    </div>
+
                     <button id="logoutBtn">Cerrar sesión</button>
                 </div>
             </div>
@@ -217,5 +236,11 @@ string emailUsuario = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.V
         });
     });
 </script>
+
+<!-- jQuery y Bootstrap JS -->
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+@RenderSection("Scripts", required: false)
 </body>
 </html>

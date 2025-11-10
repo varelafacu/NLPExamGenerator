@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NLPExamGenerator.Entidades.EF;
 
@@ -11,9 +12,11 @@ using NLPExamGenerator.Entidades.EF;
 namespace NLPExamGenerator.Entidades.Migrations
 {
     [DbContext(typeof(NLPExamGeneratorContext))]
-    partial class NLPExamGeneratorContextModelSnapshot : ModelSnapshot
+    [Migration("20251110234337_UpdatedModels")]
+    partial class UpdatedModels
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
