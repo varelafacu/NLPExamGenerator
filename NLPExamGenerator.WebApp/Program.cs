@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using NLPExamGenerator.Entidades;
 using NLPExamGenerator.Entidades.EF;
@@ -16,14 +18,21 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 // DbContext con SQL Server
+// Detectar el sistema operativo
+var connectionString = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+    ? builder.Configuration.GetConnectionString("DefaultConnection")
+    : builder.Configuration.GetConnectionString("SQLiteConnection");
+
 builder.Services.AddDbContext<NLPExamGeneratorContext>(options =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-    if (string.IsNullOrEmpty(connectionString))
+    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
     {
-        throw new InvalidOperationException("La cadena de conexi�n 'DefaultConnection' no est� definida en appsettings.json");
+        options.UseSqlServer(connectionString);
     }
-    options.UseSqlServer(connectionString);
+    else
+    {
+        options.UseSqlite(connectionString);
+    }
 });
 
 // Registrar repositorio y servicio de usuarios
@@ -49,6 +58,20 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Home/Index"; // o la ruta que elijas
+        options.ExpireTimeSpan = TimeSpan.FromDays(7);
+    });
+
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(2);
+    options.Cookie.HttpOnly = true;
+});
+
+
 var app = builder.Build();
 
 // --------------------
@@ -68,6 +91,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 app.UseSession();
+app.UseAuthentication();
 app.UseAuthorization();
 
 // Rutas MVC
