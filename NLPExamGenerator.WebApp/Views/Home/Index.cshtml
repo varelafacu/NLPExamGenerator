@@ -228,46 +228,59 @@
             .finally(() => setLoading(false));
     });
 
-    function renderExam(exam){
-        if(!exam || !Array.isArray(exam.questions)){
+       function renderExam(exam) {
+        if (!exam || !Array.isArray(exam.questions)) {
             examResult.innerHTML = '<p>No se recibieron preguntas.</p>';
             return;
         }
         lastExam = exam;
 
         // Inyectar estilos una sola vez
-        if(!document.getElementById('examStyles')){
+        if (!document.getElementById('examStyles')) {
             const style = document.createElement('style');
             style.id = 'examStyles';
             style.textContent = `
-            #examResult{max-width:960px;margin:2rem auto;text-align:left;}
-            .exam-title{color:#e6e9ff;margin-bottom:.5rem}
-            .exam-summary{color:#cfd3ff;margin-bottom:1rem}
-            .exam-question{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;margin:12px 0}
-            .exam-question h3{color:#e6e9ff;margin:0 0 .5rem;font-size:1.05rem}
-            .exam-options{list-style:none;margin:0;padding:0}
-            .exam-options li{display:flex;gap:10px;align-items:flex-start;padding:8px;border-radius:8px;color:#e6e9ff}
-            .exam-options li.correct{background:rgba(60,199,95,.14);border:1px solid rgba(74,222,128,.25)}
-            .exam-letter{font-weight:700;color:#cfd3ff;min-width:18px}
-            .exam-badge{margin-left:auto;color:#4ade80;font-size:.85rem}
-            .exam-explain{margin-top:.5rem;color:#b8befa}
-            .exam-explain summary{cursor:pointer;color:#cfd3ff}
+            #examResult { max-width:960px; margin:2rem auto; text-align:left; }
+            .exam-title { color:#e6e9ff; margin-bottom:.5rem }
+            .exam-summary { color:#cfd3ff; margin-bottom:1rem }
+            .exam-question { background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.08);
+                             border-radius:12px; padding:16px; margin:12px 0 }
+            .exam-question h3 { color:#e6e9ff; margin:0 0 .5rem; font-size:1.05rem }
+            .exam-options { list-style:none; margin:0; padding:0 }
+            .exam-options li { display:flex; gap:10px; align-items:flex-start; padding:8px; border-radius:8px;
+                               color:#e6e9ff; cursor:pointer; transition:background .3s, transform .2s }
+            .exam-options li:hover { background:rgba(255,255,255,.06); transform:scale(1.01) }
+            .exam-options li.correct { background:rgba(60,199,95,.14); border:1px solid rgba(74,222,128,.25); }
+            .exam-options li.incorrect { background:rgba(255,99,99,.14); border:1px solid rgba(255,99,99,.25); }
+            .exam-letter { font-weight:700; color:#cfd3ff; min-width:18px }
+            .exam-explain { margin-top:.5rem; color:#b8befa }
+            .progress-bar-container { width:100%; background:rgba(255,255,255,.1); height:10px;
+                                      border-radius:10px; margin:20px 0; overflow:hidden; }
+            .progress-bar { height:100%; width:0%; background:#4dabf7; transition:width 0.4s ease; }
             `;
             document.head.appendChild(style);
         }
 
-        const letters = ['A','B','C','D','E','F'];
+        const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
         const blocks = [];
         blocks.push(`<h2 class="exam-title">Examen generado</h2>`);
-        if(exam.sourceSummary){
+        if (exam.sourceSummary) {
             blocks.push(`<div class="exam-summary">Resumen: ${escapeHtml(exam.sourceSummary)}</div>`);
         }
 
+        // Barra de progreso
+            blocks.push(`
+      <div id="progress-wrapper">
+        <div class="progress-bar-container"><div class="progress-bar" id="examProgress"></div></div>
+      </div>
+    `);
+
         exam.questions.forEach((q, idx) => {
             const opts = (q.options || []).map((opt, i) => {
-                const isCorrect = i === q.correctIndex;
-                const badge = isCorrect ? '<span class="exam-badge">Correcta</span>' : '';
-                return `<li class="${isCorrect ? 'correct' : ''}"><span class="exam-letter">${letters[i] || ''}.</span><span>${escapeHtml(opt || '')}</span>${badge}</li>`;
+                return `<li data-q="${idx}" data-i="${i}">
+                            <span class="exam-letter">${letters[i] || ''}.</span>
+                            <span>${escapeHtml(opt || '')}</span>
+                        </li>`;
             }).join('');
 
             const explain = q.explanation
@@ -275,7 +288,7 @@
                 : '';
 
             blocks.push(`
-                <div class="exam-question">
+                <div class="exam-question" data-index="${idx}">
                     <h3>${idx + 1}. ${escapeHtml(q.question || '')}</h3>
                     <ul class="exam-options">${opts}</ul>
                     ${explain}
@@ -284,9 +297,103 @@
         });
 
         examResult.innerHTML = blocks.join('');
-        // mostrar botón de descarga
         downloadPdfServerBtn.style.display = 'inline-block';
+
+              const progressWrapper = document.getElementById('progress-wrapper');
+    if (progressWrapper) {
+        const fixedClass = 'fixed-wrapper';
+        const wrapperParent = progressWrapper.parentElement;
+
+        // Guardar valores iniciales
+        const offsetTop = progressWrapper.offsetTop;
+        const wrapperHeight = progressWrapper.offsetHeight;
+        let wrapperWidth = progressWrapper.offsetWidth;
+        let wrapperLeft = progressWrapper.getBoundingClientRect().left + window.scrollX;
+
+        let ticking = false;
+
+        window.addEventListener('scroll', () => {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    const scrollY = window.scrollY;
+
+                    if (scrollY > offsetTop) {
+                        if (!progressWrapper.classList.contains(fixedClass)) {
+                            progressWrapper.classList.add(fixedClass);
+                            progressWrapper.style.width = wrapperWidth + 'px';
+                            progressWrapper.style.left = wrapperLeft + 'px';
+                            wrapperParent.style.paddingTop = wrapperHeight + 'px';
+                        }
+                    } else {
+                        if (progressWrapper.classList.contains(fixedClass)) {
+                            progressWrapper.classList.remove(fixedClass);
+                            progressWrapper.style.width = '';
+                            progressWrapper.style.left = '';
+                            wrapperParent.style.paddingTop = '0';
+                        }
+                    }
+
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+
+        // Recalcular ancho/left si cambió el tamaño de ventana
+        window.addEventListener('resize', () => {
+            wrapperWidth = progressWrapper.offsetWidth;
+            wrapperLeft = progressWrapper.getBoundingClientRect().left + window.scrollX;
+        });
     }
+
+
+        // Interacción y progreso
+    const questions = document.querySelectorAll('.exam-question');
+    const progressBar = document.getElementById('examProgress');
+    let answered = 0;
+
+    // Inicialmente deshabilitar el botón de descargar
+    downloadPdfServerBtn.style.display = 'none';
+
+    questions.forEach(qEl => {
+        const qIndex = parseInt(qEl.dataset.index);
+        const correctIndex = exam.questions[qIndex].correctIndex;
+        const opts = qEl.querySelectorAll('li');
+
+        opts.forEach(opt => {
+            opt.addEventListener('click', () => {
+                if (qEl.classList.contains('answered')) return;
+                qEl.classList.add('answered');
+
+                const selected = parseInt(opt.dataset.i);
+                const explain = qEl.querySelector('.exam-explain');
+
+                if (selected === correctIndex) {
+                    opt.classList.add('correct');
+                } else {
+                    opt.classList.add('incorrect');
+                    opts[correctIndex].classList.add('correct');
+                }
+
+                // Mostrar explicación solo después de responder
+                if (explain) explain.style.display = 'block';
+
+                answered++;
+                const progress = (answered / exam.questions.length) * 100;
+                progressBar.style.width = progress + '%';
+
+                // Habilitar botón de descargar si todas las preguntas fueron respondidas
+                if (answered === exam.questions.length) {
+                    downloadPdfServerBtn.style.display = 'inline-block';
+                }
+            });
+        });
+    });
+
+
+      
+    }
+
 
     function escapeHtml(s){
         return String(s).replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
@@ -367,5 +474,7 @@
     }
 
     escribir();
+
+
 </script>
 

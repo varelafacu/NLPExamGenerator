@@ -4,8 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using NLPExamGenerator.Entidades;
 using NLPExamGenerator.Entidades.EF;
 using NLPExamGenerator.Logica;
-using NLPExamGenerator.WebApp.Models;
-using NLPExamGenerator.WebApp.Services;
+using NLPExamGenerator.Logica.Models;
+using NLPExamGenerator.Logica.Services;
 using QuestPDF;
 using QuestPDF.Infrastructure;
 var builder = WebApplication.CreateBuilder(args);
@@ -40,6 +40,7 @@ builder.Services.AddDbContext<NLPExamGeneratorContext>(options =>
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();*/
 
 builder.Services.AddScoped<IUsuarioLogica, UsuarioLogica>();
+builder.Services.AddScoped<IExamLogica, ExamLogica>();
 
 // OpenAI
 builder.Services.Configure<OpenAIOptions>(builder.Configuration.GetSection("OpenAI"));

@@ -8,5 +8,7 @@
         public string Password { get; set; }
 
         public bool Plus { get; set; }
+        
+        public ICollection<Exam> Exams { get; set; } = new List<Exam>();
     }
 }

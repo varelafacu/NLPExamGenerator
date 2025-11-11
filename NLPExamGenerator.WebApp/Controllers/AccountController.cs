@@ -54,6 +54,7 @@ namespace PNLExamGenerator.Controllers
                 );
                 
                 HttpContext.Session.SetString("NombreUsuario", usuario.Nombre ?? "");
+                HttpContext.Session.SetString("UserId", usuario.Id.ToString());
 
                 return Json(new { success = true, mensaje = "Bienvenido", nombre = usuario.Nombre });
             }

@@ -2,9 +2,9 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
-using NLPExamGenerator.WebApp.Models;
+using NLPExamGenerator.Logica.Models;
 
-namespace NLPExamGenerator.WebApp.Services
+namespace NLPExamGenerator.Logica.Services
 {
 	public interface IOpenAIService
 	{
