@@ -2,7 +2,8 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using NLPExamGenerator.WebApp.Models;
-using NLPExamGenerator.WebApp.Services;
+using NLPExamGenerator.Logica.Models;
+using NLPExamGenerator.Logica.Services;
 
 namespace PNLExamGenerator.Controllers
 {
@@ -20,11 +21,7 @@ namespace PNLExamGenerator.Controllers
             return View();
         }
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
+       
         public IActionResult Comofunciona()
         {
             return View();
