@@ -53,8 +53,31 @@ string emailUsuario = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.V
             </a>
             }
         </nav>
+            <button id="hamburgerBtn" class="hamburger" aria-label="Abrir menú" aria-controls="mobileMenu" aria-expanded="false">
+                <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" aria-hidden="true">
+                    <path fill="#FFFFFF" d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z" />
+                </svg>
+            </button>
     </div>
 </header>
+
+    <!-- Menú móvil -->
+    <nav id="mobileMenu" class="mobile-menu" aria-hidden="true">
+        <ul class="mobile-menu-list">
+            <li><a href="/home/index">Inicio</a></li>
+            <li><a href="/home/comofunciona">¿Cómo Funciona?</a></li>
+            @if (isLoggedIn)
+            {
+                <li><a href="/Account/Profile">Perfil</a></li>
+            }
+            else
+            {
+                <!-- Si no está logueado, este ítem abre tu popup de login -->
+                <li><a href="#" id="loginBtnMenu">Perfil</a></li>
+            }
+        </ul>
+    </nav>
+
 
 <main class="main-content">
     @RenderBody()
@@ -234,6 +257,55 @@ string emailUsuario = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.V
                 .then(data => { if(data.success) location.reload(); })
                 .catch(err => console.error(err));
         });
+
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const loginBtnMenu = document.getElementById('loginBtnMenu'); // solo existe si no está logueado
+
+        function abrirMenu() {
+            mobileMenu.classList.add('open');
+            overlay.classList.add('show');
+            hamburgerBtn?.setAttribute('aria-expanded', 'true');
+            mobileMenu?.setAttribute('aria-hidden', 'false');
+        }
+        function cerrarMenu() {
+            mobileMenu.classList.remove('open');
+            hamburgerBtn?.setAttribute('aria-expanded', 'false');
+            mobileMenu?.setAttribute('aria-hidden', 'true');
+            // el overlay puede seguir visible si tenés otro popup, por eso no lo tocamos acá
+        }
+
+        hamburgerBtn?.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (mobileMenu.classList.contains('open')) {
+                cerrarMenu();
+                overlay.classList.remove('show');
+            } else {
+                abrirMenu();
+            }
+        });
+
+        // Cerrar si tocás overlay (extendemos tu handler existente)
+        overlay?.addEventListener('click', () => {
+            cerrarMenu();
+        });
+
+        // Cerrar con ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') cerrarMenu();
+        });
+
+        // Si no está logueado, el ítem "Perfil" de menú abre el popup de login
+        loginBtnMenu?.addEventListener('click', (e) => {
+            e.preventDefault();
+            cerrarMenu();
+            authPopup.classList.add('show');
+            overlay.classList.add('show');
+            // Aseguramos que quede en la cara "Login"
+            card.classList.remove('flipped');
+            popupTitle.textContent = 'Inicia sesión';
+            toggleLink.textContent = '¿No tienes cuenta? Registrate';
+        });
     });
 </script>
 
@@ -244,3 +316,7 @@ string emailUsuario = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.V
 @RenderSection("Scripts", required: false)
 </body>
 </html>
+
+<script>
+   
+</script>
