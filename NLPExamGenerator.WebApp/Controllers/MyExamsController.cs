@@ -68,7 +68,9 @@ namespace NLPExamGenerator.WebApp.Controllers
                     return RedirectToAction("Index");
                 }
 
-                var examResponse = exam.ToExamResponse();
+                var examResponse = NLPExamGenerator.Logica.Models.ExamExtensions.ToExamResponse(
+                    (NLPExamGenerator.Entidades.Exam)exam
+                );
                 var viewModel = new ExamDetailViewModel
                 {
                     Id = exam.Id,
