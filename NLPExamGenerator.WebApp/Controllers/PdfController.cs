@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using NLPExamGenerator.WebApp.Models;
-using NLPExamGenerator.WebApp.Services;
+using NLPExamGenerator.Logica.Models;
+using NLPExamGenerator.Logica.Services;
 
 namespace PNLExamGenerator.Controllers
 {

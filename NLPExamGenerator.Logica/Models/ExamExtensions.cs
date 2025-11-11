@@ -2,7 +2,7 @@ using NLPExamGenerator.Entidades;
 using NLPExamGenerator.Logica;
 using System.Text.Json;
 
-namespace NLPExamGenerator.WebApp.Models
+namespace NLPExamGenerator.Logica.Models
 {
     public static class ExamExtensions
     {

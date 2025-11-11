@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace NLPExamGenerator.WebApp.Models
+namespace NLPExamGenerator.Logica.Models
 {
 	public class ExamQuestion
 	{

@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
-using NLPExamGenerator.WebApp.Services;
-using NLPExamGenerator.Logica;
-using NLPExamGenerator.WebApp.Models;
 using System.Linq;
+using NLPExamGenerator.Logica.Services;
+using NLPExamGenerator.Logica;
+using NLPExamGenerator.Logica.Models;
 
-namespace PNLExamGenerator.Controllers
+namespace NLPExamGenerator.Controllers
 {
 	[ApiController]
 	[Route("[controller]")]

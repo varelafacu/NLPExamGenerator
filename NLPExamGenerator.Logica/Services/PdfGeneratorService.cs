@@ -1,10 +1,10 @@
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
-using NLPExamGenerator.WebApp.Models;
+using NLPExamGenerator.Logica.Models;
 using System.Net.Http;
 
-namespace NLPExamGenerator.WebApp.Services
+namespace NLPExamGenerator.Logica.Services
 {
 	public interface IPdfGeneratorService
 	{

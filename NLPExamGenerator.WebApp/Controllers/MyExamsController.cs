@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NLPExamGenerator.Logica;
-using NLPExamGenerator.WebApp.Models;
+using NLPExamGenerator.Logica.Models;
 using System.Security.Claims;
 
 namespace NLPExamGenerator.WebApp.Controllers
@@ -68,7 +68,9 @@ namespace NLPExamGenerator.WebApp.Controllers
                     return RedirectToAction("Index");
                 }
 
-                var examResponse = exam.ToExamResponse();
+                var examResponse = NLPExamGenerator.Logica.Models.ExamExtensions.ToExamResponse(
+                    (NLPExamGenerator.Entidades.Exam)exam
+                );
                 var viewModel = new ExamDetailViewModel
                 {
                     Id = exam.Id,

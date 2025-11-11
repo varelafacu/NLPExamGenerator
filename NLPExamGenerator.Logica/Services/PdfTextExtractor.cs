@@ -1,7 +1,7 @@
 using System.Text;
 using UglyToad.PdfPig;
 
-namespace NLPExamGenerator.WebApp.Services
+namespace NLPExamGenerator.Logica.Services
 {
 	public static class PdfTextExtractor
 	{
